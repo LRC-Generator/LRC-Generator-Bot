@@ -12,8 +12,9 @@
     "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
     "build": "tsc",
     "start": "node --env-file-if-exists=.env dist/index.js",
-    "typecheck": "tsc --noEmit",
-    "deploy-commands": "tsx --env-file-if-exists=.env src/deploy-commands.ts"
+    "typecheck": "tsc --noEmit && tsc -p test",
+    "deploy-commands": "tsx --env-file-if-exists=.env src/deploy-commands.ts",
+    "test": "tsx --test test/*.test.ts"
   },
   "repository": {
     "type": "git",

@@ -9,3 +9,8 @@ export function requireEnv(name: string): string {
 export function optionalEnv(name: string): string | undefined {
   return process.env[name] || undefined;
 }
+
+/** True for `true`, `1` or `yes`; false when unset. */
+export function flagEnv(name: string): boolean {
+  return /^(true|1|yes)$/i.test(process.env[name]?.trim() ?? "");
+}
