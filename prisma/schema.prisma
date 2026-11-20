@@ -1,0 +1,49 @@
+// A copy of lrc.notnick.io's prisma/schema.prisma. That site owns the
+// database and its migrations: never run `prisma migrate` or `prisma db push`
+// from here. When the site's schema changes, copy the models over and run
+// `npm run db:generate`.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  // This project compiles to ES modules for Node, whose imports need `.js`.
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+// The connection string is in prisma.config.ts (from DATABASE_URL).
+datasource db {
+  provider = "postgresql"
+}
+
+enum DownloadFormat {
+  lrc
+  srt
+}
+
+/// Where the lyrics came from: synced on the site, its editor as it is, an
+/// uploaded .lrc, or an .lrc converted by this bot.
+enum DownloadSource {
+  sync
+  editor
+  upload
+  discord
+}
+
+/// One file made. The bot stores only its format and source, never the lyrics,
+/// the file's name or who asked for it.
+model Download {
+  id        Int            @id @default(autoincrement())
+  format    DownloadFormat
+  source    DownloadSource
+  createdAt DateTime       @default(now())
+}
+
+/// "Requests served" on lrc.notnick.io/usage: one for each file saved on the
+/// site or converted here. A single row (`COUNT_ID` in src/db.ts).
+model Count {
+  id        Int      @id @default(1)
+  /// Where the count starts.
+  value     Int      @default(165)
+  updatedAt DateTime @updatedAt
+}

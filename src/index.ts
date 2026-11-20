@@ -9,6 +9,7 @@ import {
 import { commands } from "./commands/index.js";
 import { handleConvertInteraction } from "./convert/interactions.js";
 import { handleDroppedFiles } from "./convert/messages.js";
+import { db } from "./db.js";
 import { flagEnv, requireEnv } from "./env.js";
 
 /** Convert `.lrc` files dropped in any channel, not just DMs and mentions. */
@@ -28,6 +29,11 @@ const client = new Client({
 
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`Logged in as ${readyClient.user.tag}`);
+  console.log(
+    db
+      ? "Logging conversions to the database"
+      : "No DATABASE_URL, so conversions aren't logged",
+  );
 });
 
 async function handleInteraction(interaction: Interaction): Promise<void> {

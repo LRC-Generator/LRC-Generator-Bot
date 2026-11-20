@@ -5,7 +5,7 @@ import type { Command } from "./types.js";
 export const convert: Command = {
   data: new SlashCommandBuilder()
     .setName("convert")
-    .setDescription("Turn an LRC lyrics file into SRT subtitles")
+    .setDescription("Converts .lrc files into subtitle files")
     .addAttachmentOption((option) =>
       option
         .setName("file")

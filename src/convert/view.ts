@@ -65,24 +65,9 @@ function editButton(
     .setStyle(active ? ButtonStyle.Primary : ButtonStyle.Secondary);
 }
 
-/** The message that carries a converted file: summary, file and buttons. */
-export function renderSession(session: Session) {
+/** The button rows under a converted file. */
+function renderButtons(session: Session) {
   const { edits } = session;
-  const cues = applyEdits(session.cues, edits);
-  const srt = buildSrt(cues);
-
-  const summary = [
-    `**${escapeMarkdown(session.fileName)}**`,
-    `${cues.length} subtitle${cues.length === 1 ? "" : "s"}`,
-    describeEdits(edits),
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  const content =
-    cues.length === 0
-      ? `${summary}\nRemoving parentheses left nothing to show. Press **Remove ( )** again to bring the lyrics back.`
-      : summary;
 
   // The on/off edits go on the first row; the line length, Reset and Cancel
   // on the second.
@@ -109,10 +94,32 @@ export function renderSession(session: Session) {
       .setStyle(ButtonStyle.Danger),
   );
 
+  return [editRow, controlRow];
+}
+
+/** The message that carries a converted file: summary, file and buttons. */
+export function renderSession(session: Session) {
+  const { edits } = session;
+  const cues = applyEdits(session.cues, edits);
+  const srt = buildSrt(cues);
+
+  const summary = [
+    `**${escapeMarkdown(session.fileName)}**`,
+    `${cues.length} subtitle${cues.length === 1 ? "" : "s"}`,
+    describeEdits(edits),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const content =
+    cues.length === 0
+      ? `${summary}\nRemoving parentheses left nothing to show. Press **Remove ( )** again to bring the lyrics back.`
+      : summary;
+
   return {
     content,
     files: srt === "" ? [] : [new AttachmentBuilder(Buffer.from(srt, "utf8"), { name: session.fileName })],
-    components: [editRow, controlRow],
+    components: renderButtons(session),
     allowedMentions: { parse: [] },
   };
 }

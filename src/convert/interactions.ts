@@ -26,6 +26,7 @@ import {
   readAttachment,
 } from "./input.js";
 import { createSession, forgetSession, getSession, type Session } from "./session.js";
+import { logConversion } from "./usage-log.js";
 import {
   editCustomId,
   type EditTarget,
@@ -56,12 +57,14 @@ export function buildUploadModal(): ModalBuilder {
         ),
       new LabelBuilder()
         .setLabel("Or paste the lyrics")
-        .setDescription("LRC text, if you don't have it as a file.")
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(TEXT_FIELD)
             .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("[00:12.34] First line\n[00:15.80] Second line")
+            // Discord allows at most 100 characters here.
+            .setPlaceholder(
+              "[Pre-Chorus: Theo Lane]\nWherever the road goes, I'll be driving\nHeadlights on and still believing",
+            )
             .setMaxLength(4000)
             .setRequired(false),
         ),
@@ -109,6 +112,7 @@ async function respondWithConversion(
   try {
     const session = await convert();
     await interaction.editReply(renderSession(session));
+    logConversion();
   } catch (error) {
     await interaction.deleteReply().catch(() => undefined);
     if (!(error instanceof ConvertError)) throw error;

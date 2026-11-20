@@ -1,5 +1,6 @@
 import type { Message } from "discord.js";
 import { ConvertError, convertAttachment, isLrcAttachment } from "./input.js";
+import { logConversion } from "./usage-log.js";
 import { renderSession } from "./view.js";
 
 const HINT =
@@ -30,6 +31,7 @@ export async function handleDroppedFiles(message: Message, watchAllChannels: boo
         ...renderSession(session),
         allowedMentions: { parse: [], repliedUser: false },
       });
+      logConversion();
     } catch (error) {
       if (!(error instanceof ConvertError)) throw error;
       await message.reply({ content: error.message, allowedMentions: { repliedUser: false } });
