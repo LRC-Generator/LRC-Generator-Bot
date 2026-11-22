@@ -26,6 +26,7 @@ import {
   readAttachment,
 } from "./input.js";
 import { createSession, forgetSession, getSession, type Session } from "./session.js";
+import { type ConversionSource, interactionDetails } from "./discord-log.js";
 import { logConversion } from "./usage-log.js";
 import {
   editCustomId,
@@ -106,13 +107,20 @@ function textField(interaction: ModalSubmitInteraction, customId: string): strin
  */
 async function respondWithConversion(
   interaction: ChatInputCommandInteraction | ModalSubmitInteraction,
+  source: ConversionSource,
   convert: () => Session | Promise<Session>,
 ): Promise<void> {
   await interaction.deferReply();
   try {
     const session = await convert();
     await interaction.editReply(renderSession(session));
-    logConversion();
+    logConversion({
+      fileName: session.fileName,
+      subtitles: session.cues.length,
+      source,
+      discord: interactionDetails(interaction),
+      language: interaction.locale,
+    });
   } catch (error) {
     await interaction.deleteReply().catch(() => undefined);
     if (!(error instanceof ConvertError)) throw error;
@@ -130,7 +138,11 @@ export async function convertFromInteraction(
     await interaction.reply({ content: problem, flags: MessageFlags.Ephemeral });
     return;
   }
-  await respondWithConversion(interaction, () => convertAttachment(file, interaction.user.id));
+  // The upload form's file comes through here too, as a form submission.
+  const source = interaction.isModalSubmit() ? "form" : "command";
+  await respondWithConversion(interaction, source, () =>
+    convertAttachment(file, interaction.user.id),
+  );
 }
 
 async function handleUploadModal(interaction: ModalSubmitInteraction): Promise<void> {
@@ -142,7 +154,7 @@ async function handleUploadModal(interaction: ModalSubmitInteraction): Promise<v
 
   const text = textField(interaction, TEXT_FIELD).trim();
   if (text) {
-    await respondWithConversion(interaction, () =>
+    await respondWithConversion(interaction, "pasted", () =>
       convertLrc(text, "lyrics.lrc", interaction.user.id, "what you pasted"),
     );
     return;

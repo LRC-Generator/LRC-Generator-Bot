@@ -14,19 +14,14 @@ const ANYWHERE = ["fuck", "shit", "bitch", "cunt", "whore"];
  * ("class", "cocktail", "snigger"). List every form that should be caught.
  */
 const WHOLE_WORDS = [
-  "ass", "asses", "asshole", "assholes", "badass", "dumbass", "fatass", "jackass", "kickass", "smartass",
-  "bastard", "bastards",
+  "ass", "asses", "asshole", "assholes", "jackass",
   "cock", "cocks", "cocksucker", "cocksuckers",
   "dick", "dicks", "dickhead", "dickheads",
   "fag", "fags", "faggot", "faggots",
   "hoe", "hoes",
   "nigga", "niggas", "niggaz", "nigger", "niggers",
   "prick", "pricks",
-  "pussy", "pussies",
   "retard", "retards", "retarded",
-  "slut", "sluts", "slutty",
-  "thot", "thots",
-  "twat", "twats",
 ];
 
 /** A letter or digit in any script, so accented words count as one word. */

@@ -24,9 +24,12 @@ Highlighted buttons are on. Only the person who converted the file can press the
 
 ## Usage logging
 
-When `DATABASE_URL` is set, every file the bot converts is counted in [lrc.notnick.io](https://lrc.notnick.io)'s database. It adds one to **Requests served** and shows up as "Converted on Discord" on the site's [Usage](https://lrc.notnick.io/usage) page. Only that an `.srt` was made, and when, is stored: never the lyrics, the file's name or who asked for it.
+Each file the bot converts can be logged in two places, both optional:
 
-Discord doesn't tell bots when someone downloads a file, so each conversion is counted instead: `/convert` with a file, the upload form, or a dropped file. Edits with the buttons don't count again. Logging never holds up a reply, and if the database can't be reached the error goes to the console and the bot carries on.
+- **Database** (`DATABASE_URL`): counted in [lrc.notnick.io](https://lrc.notnick.io)'s database. It adds one to **Requests served** and shows up as "Converted on Discord" on the site's [Usage](https://lrc.notnick.io/usage) page. Only that an `.srt` was made, and when, is stored.
+- **Discord** (`LOGGING`): posted to a webhook with the same fields as the site's download log, so both look alike in one channel. It has the file's name, how many subtitles it has, the language the user's Discord is set to (not known for dropped files), and how the file reached the bot (`/convert` with a file, the upload form, pasted lyrics or a dropped file). Fields only a browser can fill, like Theme and Audio, say "N/A". In place of the browser, Source says where in Discord it happened, as far as Discord tells bots: a server, a DM with the bot, or another DM or group chat; whether the bot was added to the server or to the user's own account; the server's language; and the bot's own versions, like `Discord · Server · Added to the server · server language en-US · LRC Generator Bot 1.0.0 (discord.js 14.28.1; Node.js 22.22.0)`. Being that long, it widens the embed to full width, like the site's browser field does. Discord doesn't tell bots which device or app someone uses. Never the lyrics, or who asked for it: no user or server IDs or names.
+
+Discord doesn't tell bots when someone downloads a file, so each conversion is counted instead. Edits with the buttons don't count again. Logging never holds up a reply, and if the database or webhook can't be reached, the error goes to the console and the bot carries on. On startup the bot says where it's logging.
 
 The site owns the database. `prisma/schema.prisma` here is a copy of the site's, used only to generate the client (`npm install` does it). Never run `prisma migrate` or `prisma db push` from this repo. The bot needs the site's `discord` source migration deployed first; until then each conversion logs an error and nothing is stored.
 
@@ -49,7 +52,7 @@ The site owns the database. `prisma/schema.prisma` here is a copy of the site's,
    npm install
    ```
 
-2. Copy `.env.example` to `.env` and fill in `DISCORD_TOKEN` and `DISCORD_CLIENT_ID` from the [Discord Developer Portal](https://discord.com/developers/applications). For development, set `DISCORD_GUILD_ID` to your test server's ID so command changes appear instantly. To count conversions on lrc.notnick.io, also set `DATABASE_URL` (see [Usage logging](#usage-logging)).
+2. Copy `.env.example` to `.env` and fill in `DISCORD_TOKEN` and `DISCORD_CLIENT_ID` from the [Discord Developer Portal](https://discord.com/developers/applications). For development, set `DISCORD_GUILD_ID` to your test server's ID so command changes appear instantly. To log conversions, also set `DATABASE_URL` and/or `LOGGING` (see [Usage logging](#usage-logging)).
 
 3. Invite the bot to your server (OAuth2 → URL Generator in the Developer Portal) with the `bot` and `applications.commands` scopes, and the **View Channels**, **Send Messages**, **Attach Files** and **Read Message History** permissions.
 
