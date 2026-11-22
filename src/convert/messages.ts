@@ -1,5 +1,6 @@
 import type { Message } from "discord.js";
 import { ConvertError, convertAttachment, isLrcAttachment } from "./input.js";
+import { messageDetails } from "./discord-log.js";
 import { logConversion } from "./usage-log.js";
 import { renderSession } from "./view.js";
 
@@ -31,7 +32,13 @@ export async function handleDroppedFiles(message: Message, watchAllChannels: boo
         ...renderSession(session),
         allowedMentions: { parse: [], repliedUser: false },
       });
-      logConversion();
+      logConversion({
+        fileName: session.fileName,
+        subtitles: session.cues.length,
+        source: "dropped",
+        discord: messageDetails(message),
+        language: null,
+      });
     } catch (error) {
       if (!(error instanceof ConvertError)) throw error;
       await message.reply({ content: error.message, allowedMentions: { repliedUser: false } });
