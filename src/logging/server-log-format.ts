@@ -73,7 +73,7 @@ function buildPayload(entries: LogEntry[], lines: string[], footer: string) {
     "info",
   );
   return {
-    username: "LRC Generator Bot",
+    username: "LRC Generator",
     embeds: [
       {
         title: LEVEL_TITLES[worst],
