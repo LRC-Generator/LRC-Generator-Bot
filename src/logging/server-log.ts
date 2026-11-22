@@ -44,7 +44,7 @@ const secrets = secretsFrom(
   ["DISCORD_TOKEN", "DATABASE_URL", "LOGGING", "SERVER_LOGGING"].map((name) => process.env[name]),
 );
 
-const footer = `${hostname()} · times in UTC`;
+const footer = `${hostname()} · UTC`;
 
 const queue: LogEntry[] = [];
 /** Lines left out since the queue filled up. */
