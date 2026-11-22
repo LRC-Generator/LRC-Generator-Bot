@@ -1,9 +1,7 @@
 import { countRequest, db } from "../db.js";
 import { optionalEnv } from "../env.js";
-import { buildConversionLogPayload, type ConversionLog, isDiscordWebhookUrl } from "./discord-log.js";
-
-/** Discord is given this long to take the log before it's dropped. */
-const WEBHOOK_TIMEOUT_MS = 10_000;
+import { isDiscordWebhookUrl, postToWebhook } from "../logging/webhook.js";
+import { buildConversionLogPayload, type ConversionLog } from "./discord-log.js";
 
 /** The `LOGGING` webhook, the same one lrc.notnick.io logs downloads to. Optional. */
 const webhookUrl = (() => {
@@ -50,12 +48,7 @@ async function storeConversion(): Promise<void> {
 async function postConversion(log: ConversionLog): Promise<void> {
   if (!webhookUrl) return;
   try {
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(buildConversionLogPayload(log)),
-      signal: AbortSignal.timeout(WEBHOOK_TIMEOUT_MS),
-    });
+    const response = await postToWebhook(webhookUrl, buildConversionLogPayload(log));
     if (!response.ok) console.error(`Discord webhook responded with ${response.status}`);
   } catch (error) {
     console.error("Discord webhook request failed", error);
