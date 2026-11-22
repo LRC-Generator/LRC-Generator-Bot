@@ -3,7 +3,7 @@
 module.exports = {
   apps: [
     {
-      name: "lrc-bot",
+      name: "lrc-generator-bot",
       // Node runs the bot itself (not through `npm start`), so pm2's stop
       // signal reaches it and it can shut down cleanly.
       script: "dist/index.js",
