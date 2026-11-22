@@ -125,20 +125,6 @@ export type ConversionLog = {
   language: string | null;
 };
 
-/** Only real Discord webhook URLs are accepted, so a typo in the env var fails loudly. */
-export function isDiscordWebhookUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return (
-      url.protocol === "https:" &&
-      /(^|\.)discord(app)?\.com$/.test(url.hostname) &&
-      url.pathname.startsWith("/api/webhooks/")
-    );
-  } catch {
-    return false;
-  }
-}
-
 /** One line of plain text, short enough for a Discord field. */
 function cleanName(name: string): string {
   const text = name

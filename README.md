@@ -33,6 +33,30 @@ Discord doesn't tell bots when someone downloads a file, so each conversion is c
 
 The site owns the database. `prisma/schema.prisma` here is a copy of the site's, used only to generate the client (`npm install` does it). Never run `prisma migrate` or `prisma db push` from this repo. The bot needs the site's `discord` source migration deployed first; until then each conversion logs an error and nothing is stored.
 
+## Server logs
+
+Set `SERVER_LOGGING` to a Discord webhook URL, for a different channel from `LOGGING`, to see what the bot writes to its console from Discord:
+
+- when it starts, with its versions and the server's name;
+- errors, including a crash, which is sent before the bot exits;
+- when it loses its connection to Discord, reconnects and stops.
+
+Lines are batched into one message every 2 seconds at most, coloured by the worst level in them: green for logs, yellow for warnings and red for errors. Times are in UTC. The bot token, `DATABASE_URL` and both webhook URLs are replaced with `[redacted]` if an error ever prints them. The console still gets everything, so pm2's log files are unchanged.
+
+## Running on a server with pm2
+
+`ecosystem.config.cjs` has the pm2 settings. pm2 runs Node directly, so its stop signal reaches the bot, and it allows 5 seconds for the last log lines to send.
+
+```bash
+npm ci
+npm run build
+npm run deploy-commands      # once, and again when commands change
+pm2 start ecosystem.config.cjs
+pm2 save                     # and `pm2 startup` once, to start again after a reboot
+```
+
+To update, run `git pull`, `npm ci` and `npm run build`, then `pm2 restart lrc-bot`. If the bot was first started with `pm2 start npm -- start`, switch over with `pm2 delete lrc-bot`, then `pm2 start ecosystem.config.cjs` and `pm2 save`.
+
 ## How conversion works
 
 - Each lyric lasts until the next time tag. The last one lasts until `[length: mm:ss]` if the file has it, or 5 seconds otherwise.
@@ -86,5 +110,6 @@ The site owns the database. `prisma/schema.prisma` here is a copy of the site's,
 
 - `src/lyrics/` – LRC parsing, SRT output and the edits, with no Discord code.
 - `src/convert/` – the Discord side: reading files, the reply and its buttons, the upload and max length forms, and dropped files.
+- `src/logging/` – the server log and the shared webhook code.
 - `src/db.ts`, `prisma/` – the connection to lrc.notnick.io's database, used by `src/convert/usage-log.ts`. The client is generated into `src/generated/` (gitignored).
 - `src/commands/` – slash commands. Add a new one to the list in `src/commands/index.ts`, then run `npm run deploy-commands`.

@@ -6,8 +6,8 @@ import {
   buildConversionLogPayload,
   type DiscordDetails,
   interactionDetails,
-  isDiscordWebhookUrl,
 } from "../src/convert/discord-log.js";
+import { isDiscordWebhookUrl } from "../src/logging/webhook.js";
 
 const inServer: DiscordDetails = { place: "server", install: "server", serverLanguage: "en-US" };
 

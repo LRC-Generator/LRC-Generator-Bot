@@ -1,3 +1,7 @@
+// First, so the server log sees everything the rest prints while loading.
+import { flushServerLog } from "./logging/server-log.js";
+
+import { hostname } from "node:os";
 import {
   Client,
   Events,
@@ -7,10 +11,14 @@ import {
   Partials,
 } from "discord.js";
 import { commands } from "./commands/index.js";
+import { BOT_SOFTWARE } from "./convert/discord-log.js";
 import { handleConvertInteraction } from "./convert/interactions.js";
 import { handleDroppedFiles } from "./convert/messages.js";
 import { loggingTargets } from "./convert/usage-log.js";
+import { db } from "./db.js";
 import { flagEnv, requireEnv } from "./env.js";
+
+console.log(`Starting ${BOT_SOFTWARE} on ${hostname()}`);
 
 /** Convert `.lrc` files dropped in any channel, not just DMs and mentions. */
 const watchAllChannels = flagEnv("WATCH_ALL_CHANNELS");
@@ -26,6 +34,15 @@ const client = new Client({
   // DM channels aren't cached, so their messages arrive only with this.
   partials: [Partials.Channel],
 });
+
+// The connection to Discord. discord.js reconnects by itself; these say when.
+client.on(Events.Error, (error) => console.error("Discord client error:", error));
+client.on(Events.Warn, (message) => console.warn("Discord client warning:", message));
+client.on(Events.ShardDisconnect, (event) =>
+  console.warn(`Disconnected from Discord (close code ${event.code})`),
+);
+client.on(Events.ShardReconnecting, () => console.log("Reconnecting to Discord…"));
+client.on(Events.ShardResume, () => console.log("Reconnected to Discord"));
 
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`Logged in as ${readyClient.user.tag}`);
@@ -85,5 +102,27 @@ client.on(Events.MessageCreate, async (message) => {
     console.error("Error while converting a dropped file:", error);
   }
 });
+
+// A crash is logged and sent before the bot exits; pm2 then starts it again.
+process.on("uncaughtException", (error) => {
+  console.error("The bot crashed:", error);
+  void flushServerLog(3_000).finally(() => process.exit(1));
+});
+// A promise that failed with nothing to catch it. Logged, and the bot carries
+// on, rather than crashing over one failed request.
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled promise rejection:", reason);
+});
+
+/** pm2 sends SIGINT to stop or restart the bot. */
+async function shutDown(signal: NodeJS.Signals): Promise<void> {
+  console.log(`Shutting down (${signal})`);
+  await client.destroy().catch(() => undefined);
+  await db?.$disconnect().catch(() => undefined);
+  await flushServerLog(2_000);
+  process.exit(0);
+}
+process.once("SIGINT", (signal) => void shutDown(signal));
+process.once("SIGTERM", (signal) => void shutDown(signal));
 
 await client.login(requireEnv("DISCORD_TOKEN"));
