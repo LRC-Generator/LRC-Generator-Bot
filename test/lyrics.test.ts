@@ -118,7 +118,14 @@ describe("edits", () => {
   test("censors whole words, any case, and leaves clean words alone", () => {
     assert.equal(censorLine("What the fuck"), "What the ****");
     assert.equal(censorLine("Motherfuckin' SHIT, bullshit!"), "****' ****, ****!");
-    assert.equal(censorLine("Kiss my ass, dumbass"), "Kiss my ****, ****");
+    assert.equal(censorLine("Kiss my ass, assholes"), "Kiss my ****, ****");
+    // Mild enough to leave in.
+    assert.equal(
+      censorLine("Badass, dumbass, kickass smartass bastards: pussy thots twat"),
+      "Badass, dumbass, kickass smartass bastards: pussy thots twat",
+    );
+    // Punctuation and spaces are never censored on their own.
+    assert.equal(censorLine("Hello, world. (Oh) yeah!"), "Hello, world. (Oh) yeah!");
     assert.equal(censorLine("Class, bass, a cocktail and Dickens"), "Class, bass, a cocktail and Dickens");
     const edited = applyEdits([{ start: 0, end: 1, text: "Oh shit\nno bitches" }], { ...NO_EDITS, censor: true });
     assert.deepEqual(texts(edited), ["Oh ****\nno ****"]);
