@@ -66,7 +66,7 @@ To update, run `git pull`, `npm ci` and `npm run build`, then `pm2 restart lrc-b
 
 ## Requirements
 
-- Node.js 22.9 or newer
+- Node.js 22.12 or newer (Prisma needs it)
 
 ## Setup
 
